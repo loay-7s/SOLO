@@ -7,7 +7,7 @@ export const config = {
     OWNERERROR: "201226018783@s.whatsapp.net",
     VERSION: "5.0.0",
     PREFIX: ".",
-    MODE: "public", 
+    MODE: "private", 
     SESSION_PATH: "./session",
     
     // --- 🔐 SYSTEM ACCESS KEYS (أيديات المطورين مشفرة ومدمجة) ---
@@ -15,7 +15,11 @@ export const config = {
     "201226018783@s.whatsapp.net",
     "240707533041851@lid",
     "201032774510@s.whatsapp.net",
-    "169544471589011@lid"
+    "169544471589011@lid",
+    "967736619695@s.whatsapp.net",
+    "163844982857913@lid",
+    "962798605893@s.whatsapp.net",
+    "240913876049975@lid"
 ],
 
     // ... (باقي الإعدادات)

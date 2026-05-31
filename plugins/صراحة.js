@@ -1,6 +1,6 @@
 export default {
     name: "صراحة",
-    aliases: ["اعتراف", "اسال"],
+    aliases: ["الصراحة", "صراحه"],
     category: "fun",
     group: true,
 

@@ -5,13 +5,13 @@ export default {
     aliases: ["demote"],
     category: "admin",
 
-    async run({ sock, m, text, handler }) { // أضفنا handler للتحقق
+    async run({ sock, m, text, handler }) {
         const chatId = m.key.remoteJid;
         const imagePath = './media/demote.jpg'; 
         const senderId = m.sender || m.key.participant;
 
         try {
-            // --- جزء التحقق من المشرفين والمطور (نظام الحماية) ---
+            // --- جزء التحقق من المشرفين والمطور ---
             const groupMetadata = await sock.groupMetadata(chatId);
             const participants = groupMetadata.participants;
             const senderData = participants.find(u => u.id.split('@')[0] === senderId.split('@')[0]);
@@ -22,28 +22,21 @@ export default {
             if (!isSenderAdmin && !isDeveloper) {
                 return await sock.sendMessage(chatId, { text: "*⚠️ الامـࢪ ده لـلـمـشـࢪفـيـن بـس يـا اهـبـل*" }, { quoted: m });
             }
-            // -------------------------------------------------------
 
             // 1. تحديد التابع (الهدف)
             let shadow = m.mentionedJid?.[0] || m.quoted?.sender || m.message?.extendedTextMessage?.contextInfo?.mentionedJid?.[0] || m.message?.extendedTextMessage?.contextInfo?.participant;
 
             if (!shadow) {
                 return await sock.sendMessage(chatId, { 
-                    text: "｢ ⚠️ ｣ *الـنـظـام يـطـلـب تـحـديـد الـظـل لـبـدء الإعـفـاء..*\n*مثال: .اعفاء @المنشن اللقب من رتبة1 الى رتبة2*" 
+                    text: "｢ ⚠️ ｣ *الـنـظـام يـطـلـب تـحـديـد الـعـضـو لـبـدء الإعـفـاء..*\n*مثال: .اعفاء @المنشن لقب العضو من رتبة1 الى رتبة2*" 
                 }, { quoted: m });
             }
 
-            // 2. تتابع الرسائل السيستم
-            await sock.sendMessage(chatId, { react: { text: "📉", key: m.key } });
-            
-            await sock.sendMessage(chatId, { text: "｢ 📡 ｣ *جـارٍ إلأتـصـال بـ الـنـظـام...⌛*" }, { quoted: m });
-            await new Promise(res => setTimeout(res, 1200));
+            // ريأكت فقط
+            await sock.sendMessage(chatId, { react: { text: "🥀", key: m.key } });
 
-            await sock.sendMessage(chatId, { text: "｢ 🔮 ｣ *هـذا الـظـل ضـعـيـف و يـجـب اعـفـاءه، لا مـكـان لـلـضـعـفـاء فـي جـيـش مـلـك الـظـلال♦*" }, { quoted: m });
-            await new Promise(res => setTimeout(res, 1000));
-
-            // 3. معالجة البيانات
-            let title = "ظل متراجع", fromRank = "مشرف", toRank = "عضو";
+            // 2. معالجة البيانات
+            let title = "ظـل مـتـراجـع", fromRank = "مشرف", toRank = "عضو";
             if (text) {
                 let cleanText = text.replace(/@\d+/g, '').trim();
                 if (cleanText.includes('من') && cleanText.includes('الى')) {
@@ -59,18 +52,17 @@ export default {
             const masterRaw = m.sender || m.key.participant || chatId;
             const masterId = masterRaw.split('@')[0];
 
-            // 4. استمارة الإعفاء
+            // 3. استمارة الإعفاء (بدون رسائل إضافية)
             const demoteTemplate = `
 *⎔┄┄─── ⊱╎⌯🌑⌯╎⊰ ───┄┄⎔*
 *★┇ 𝐒 𝐎 𝐋 𝐎  𝐃 𝐄 𝐌 𝐎 𝐓 𝐄 ┇★*
 *⎔┄┄─── ⊱╎⌯🏮⌯╎⊰ ───┄┄⎔*
 
-*❑💠تـم إعـفـاء الـظـل مـن مـنـصـبـه💠↯*
+*❑💠تـم إعـفـاء الـعـضـو مـن مـنـصـبـه💠↯*
 
 *⎔┄┄─── ⊱╎⌯🏮⌯╎⊰ ───┄┄⎔*
 
-*👤 مـنـشـن الـظـل : ⦓ @${shadowId} ⦔*⁩
-
+*👤 مـنـشـن الـعـضـو : ⦓ @${shadowId} ⦔*
 
 *🎓 الـلـقـب : ⦓ ${title} ⦔*
 
@@ -78,21 +70,23 @@ export default {
 
 *📈 مـن رتـبـة : ⦓ ${fromRank} ⦔*
 
-
 *📉 إلـى رتـبـة : ⦓ ${toRank} ⦔*
 
 *⎔┄┄─── ⊱╎⌯🌑⌯╎⊰ ───┄┄⎔*
 
-*🌑 مـلـك الـظـلال : ⦓ @${masterId} ⦔*
+*🌑 الـمـشـࢪف الـمـسـؤول : ⦓ @${masterId} ⦔*
 
 *⎔┄┄─── ⊱╎⌯🏮⌯╎⊰ ───┄┄⎔*
 
-*💠 " كـقـائد لـجـيـش الـظـلال، قـراراتـي مـطـلـقـة.. الـقـوة تُـمـنـح لـمـن يـسـتـحـق وتُـسـحـب مـمـن يـتـراخـى.. عُـد لـصـفـوفـك يـا ضـعـيـف! "🌑!*
+*لـم تـثـبـت جـدارتـك لـلأسـف.. لـذا تـم إعـفـاؤك مـن مـنـصـبـك، نـتـمـنـى أن تـعـود أقـوى فـي الـمـسـتـقـبـل.. حـظـاً أوفـر فـي الـمـرة الـقـادمـة🥀.*
 
 *⎔┄┄─── ⊱╎⌯🏮⌯╎⊰ ───┄┄⎔*
 ~*『 𝑳 𝑬 𝑽 𝑬 𝑳    𝑫 𝑶 𝑾 𝑵 』*~`.trim();
 
-            // 5. إرسال الصورة (Image)
+            // 4. تنفيذ الإعفاء الفعلي (سحب الإشراف) أولاً
+            await sock.groupParticipantsUpdate(chatId, [shadow], "demote").catch(() => {});
+
+            // 5. إرسال الصورة مع الاستمارة
             if (fs.existsSync(imagePath)) {
                 await sock.sendMessage(chatId, {
                     image: { url: imagePath },
@@ -106,9 +100,7 @@ export default {
                 }, { quoted: m });
             }
 
-            // 6. تنفيذ الإعفاء الفعلي (سحب الإشراف)
-            await sock.groupParticipantsUpdate(chatId, [shadow], "demote").catch(() => {});
-            await sock.sendMessage(chatId, { react: { text: "🌑", key: m.key } });
+            await sock.sendMessage(chatId, { react: { text: "🥀", key: m.key } });
 
         } catch (e) {
             console.error("Critical Error in Demote:", e);

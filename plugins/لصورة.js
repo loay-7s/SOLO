@@ -8,7 +8,7 @@ const execPromise = promisify(exec);
 
 export default {
     name: "لصورة",
-    aliases: ["حول_صورة"],
+    aliases: ["لصوره"],
     description: "تحويل الملصق الثابت إلى صورة",
     developer: false,
 

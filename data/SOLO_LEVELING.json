@@ -1,84 +1,105 @@
 {
   "240707533041851@lid": {
     "class": "مـسـتـحـضـر الأرواح 💀",
-    "level": 11,
-    "rank": "E",
-    "xp": 384,
-    "gold": 101251,
+    "level": 109,
+    "rank": "B",
+    "xp": 1410,
+    "gold": 90456,
     "lastWinInDungeon": false,
     "dailyQuests": {
-      "step": 5,
+      "step": 6,
       "msgCount": 100,
       "cmdCount": 20,
       "lastReset": 1772811430695,
       "targetText": ""
     },
     "awakenedAt": "Fri Mar 06 2026",
-    "msgCount": 7,
+    "msgCount": 3,
     "guild": {
       "currentQuest": null,
       "questProgress": 0,
       "xp": 0,
       "level": 1,
       "completedQuests": [],
-      "lastReset": 1773248488903,
-      "questStartTime": 1772883910942
+      "lastReset": 1780155534725,
+      "questStartTime": 1773488023814
     },
     "inventory": [],
     "equipped": {
       "weapon": null,
       "armor": null
     },
-    "lastHunt": 1772883726616,
-    "lastBox": 1772883756305,
-    "levelChanged": true
+    "lastHunt": 1773407024035,
+    "lastBox": 1773407060245,
+    "levelChanged": true,
+    "lastAttack": 1773407100894,
+    "lastDungeonTime": 1773487928565,
+    "runeLegendary": true,
+    "lastLostXP": 80
   },
   "99402790256674@lid": {
     "class": "مـسـتـحـضـر الأرواح 💀",
-    "level": 7,
-    "rank": "E",
+    "level": 362,
+    "rank": "SS",
     "xp": 43,
-    "gold": 96430,
+    "gold": 14471,
     "lastWinInDungeon": false,
     "dailyQuests": {
-      "step": 5,
+      "step": 6,
       "msgCount": 100,
       "cmdCount": 20,
-      "lastReset": 1772845266356,
+      "lastReset": 1773475799459,
       "targetText": ""
     },
     "awakenedAt": "Fri Mar 06 2026",
-    "msgCount": 7,
+    "msgCount": 6,
     "guild": {
       "currentQuest": null,
       "questProgress": 0,
       "xp": 0,
       "level": 1,
       "completedQuests": [],
-      "lastReset": 1773282919182,
-      "questStartTime": 1772811530965
+      "lastReset": 1780154528585,
+      "questStartTime": 1773493519980
     },
     "inventory": [
+      {
+        "id": 16,
+        "name": "💀 كتاب الموتى",
+        "type": "weapon",
+        "purchasedAt": 1773476244979,
+        "class": "مـسـتـحـضـر الأرواح"
+      },
       {
         "id": 18,
         "name": "👑◾ تاج الظلال",
         "type": "weapon",
-        "purchasedAt": 1772842941357,
+        "purchasedAt": 1773477238943,
         "class": "مـسـتـحـضـر الأرواح"
+      },
+      {
+        "id": 33,
+        "name": "💊 حبة شفاء",
+        "type": "potion",
+        "purchasedAt": 1773494049911
       }
     ],
     "equipped": {
-      "weapon": null,
+      "weapon": 18,
       "armor": null
     },
-    "lastBox": 1772844887386,
-    "levelChanged": true
+    "lastBox": 1773496742725,
+    "levelChanged": true,
+    "lastHunt": 1779046776399,
+    "lastDungeonTime": 1773493935017,
+    "runeLegendary": true,
+    "lastAttack": 1773486954548
   },
   "176042186641495@lid": {
     "class": "مـعـالـج 🧬 ☞",
     "level": 22,
     "rank": "C",
-    "xp": 189,
+    "xp": 451,
     "gold": 144,
     "lastWinInDungeon": false,
     "dailyQuests": {
@@ -89,12 +110,12 @@
       "targetText": ""
     },
     "awakenedAt": "Fri Mar 06 2026",
-    "msgCount": 7,
+    "msgCount": 5,
     "guild": {
       "currentQuest": null,
       "questProgress": 0,
       "completedQuests": [],
-      "lastReset": 1773185053419,
+      "lastReset": 1778691731667,
       "questStartTime": 1773002986011
     },
     "levelChanged": true,
@@ -103,32 +124,64 @@
   },
   "249155431727244@lid": {
     "class": "مـغـتـال 🥷🏻 ☞",
-    "level": 2,
-    "rank": "E",
-    "xp": 78,
-    "gold": 30,
+    "level": 500,
+    "rank": "SSS",
+    "xp": 19,
+    "gold": 30786,
     "lastWinInDungeon": false,
     "dailyQuests": {
-      "step": 4,
+      "step": 6,
       "msgCount": 100,
       "cmdCount": 20,
       "targetText": ""
     },
     "awakenedAt": "Fri Mar 06 2026",
-    "msgCount": 7,
+    "msgCount": 1,
     "guild": {
       "currentQuest": null,
       "questProgress": 0,
       "completedQuests": [],
-      "lastReset": 1773246223616
+      "lastReset": 1780094681868,
+      "questStartTime": 1773494299936
+    },
+    "lastHunt": 1773517837442,
+    "levelChanged": true,
+    "lastBox": 1773524493527,
+    "inventory": [
+      {
+        "id": 22,
+        "name": "👑◾ درع الملك الظلام",
+        "type": "armor",
+        "purchasedAt": 1773507914518,
+        "defense": 25
+      },
+      {
+        "id": 9,
+        "name": "🌑◾ نصل العدم",
+        "type": "weapon",
+        "purchasedAt": 1773508013328,
+        "power": 25,
+        "class": "مـغـتـال"
+      },
+      {
+        "id": 37,
+        "name": "📜◾ لفافة البطل",
+        "type": "scroll",
+        "purchasedAt": 1773508042799
+      }
+    ],
+    "lastDungeonTime": 1773524664283,
+    "equipped": {
+      "weapon": 9,
+      "armor": 22
     }
   },
   "94640279568@lid": {
     "class": "سـاحـر 🔥",
     "level": 1,
     "rank": "E",
-    "xp": 19,
-    "gold": 139,
+    "xp": 38,
+    "gold": 149,
     "inventory": [],
     "equipped": {
       "weapon": null,
@@ -136,28 +189,29 @@
     },
     "lastWinInDungeon": false,
     "dailyQuests": {
-      "step": 1,
-      "msgCount": 88,
+      "step": 2,
+      "msgCount": 100,
       "cmdCount": 0,
-      "lastReset": 1772843053565
+      "lastReset": 1772843053565,
+      "targetText": "الضعفاء يخشون الموت، أما الأقوياء فيتخذون منه سلاحاً للسيطرة على ساحة المعركة. في عالم سولو ليفلينج، الموت ليس نهاية، بل بداية جديدة لمرحلة أقوى. استعد لمواجهة مصيرك بكل شجاعة وإصرار."
     },
     "guild": {
       "currentQuest": null,
       "questProgress": 0,
       "completedQuests": [],
-      "lastReset": 1773170978282,
+      "lastReset": 1780058760969,
       "questStartTime": 1772843882559
     },
     "lastBox": 1772844862960,
     "lastArena": 0,
     "awakenedAt": "Sat Mar 07 2026",
-    "msgCount": 0
+    "msgCount": 5
   },
   "42761382289647@lid": {
     "class": "مـعـالـج 🧬",
     "level": 2,
     "rank": "E",
-    "xp": 28,
+    "xp": 29,
     "gold": 140,
     "inventory": [],
     "equipped": {
@@ -176,12 +230,99 @@
       "currentQuest": null,
       "questProgress": 0,
       "completedQuests": [],
-      "lastReset": 1773173218132
+      "lastReset": 1773424589650
     },
     "lastBox": 0,
     "lastArena": 0,
     "awakenedAt": "Sun Mar 08 2026",
-    "msgCount": 3,
+    "msgCount": 1,
     "levelChanged": false
+  },
+  "223575143411762@lid": {
+    "class": "مـعـالـج 🧬",
+    "level": 1,
+    "rank": "E",
+    "xp": 0,
+    "gold": 100,
+    "inventory": [],
+    "equipped": {
+      "weapon": null,
+      "armor": null
+    },
+    "lastWinInDungeon": false,
+    "dailyQuests": {
+      "step": 1,
+      "msgCount": 3,
+      "cmdCount": 0
+    },
+    "guild": {
+      "currentQuest": null,
+      "questProgress": 0,
+      "completedQuests": [],
+      "lastReset": 1773428794677
+    },
+    "lastBox": 0,
+    "lastArena": 0,
+    "awakenedAt": "Fri Mar 13 2026",
+    "msgCount": 3
+  },
+  "57011429503081@lid": {
+    "class": "رامـي سـهـام 🏹",
+    "level": 1,
+    "rank": "E",
+    "xp": 47,
+    "gold": 130,
+    "inventory": [],
+    "equipped": {
+      "weapon": null,
+      "armor": null
+    },
+    "lastWinInDungeon": false,
+    "dailyQuests": {
+      "step": 4,
+      "msgCount": 100,
+      "cmdCount": 20,
+      "targetText": ""
+    },
+    "guild": {
+      "currentQuest": null,
+      "questProgress": 0,
+      "completedQuests": [],
+      "lastReset": 1778151608326
+    },
+    "lastBox": 0,
+    "lastArena": 0,
+    "awakenedAt": "Sun Apr 05 2026",
+    "msgCount": 1,
+    "lastAttack": 1775378025924
+  },
+  "6416714735780@lid": {
+    "class": "سـاحـر 🔥",
+    "level": 1,
+    "rank": "E",
+    "xp": 7,
+    "gold": 100,
+    "inventory": [],
+    "equipped": {
+      "weapon": null,
+      "armor": null
+    },
+    "lastWinInDungeon": false,
+    "dailyQuests": {
+      "step": 1,
+      "msgCount": 69,
+      "cmdCount": 0,
+      "lastReset": 1775384326499
+    },
+    "guild": {
+      "currentQuest": null,
+      "questProgress": 0,
+      "completedQuests": [],
+      "lastReset": 1779030341223
+    },
+    "lastBox": 0,
+    "lastArena": 0,
+    "awakenedAt": "Sun Apr 05 2026",
+    "msgCount": 2
   }
 }

@@ -17,7 +17,7 @@ export default {
         const isAdmin = sender?.admin === 'admin' || sender?.admin === 'superadmin';
 
         if (!isAdmin && !isDeveloper) {
-            return reply("*❌ الامـࢪ ده لـلـمـشـࢪفـيـن بـس يـحـبـي.*");
+            return reply("*❌ الامـࢪ ده لـلـمـشـࢪفـيـن بـس يـا حـبـي.*");
         }
 
         try {

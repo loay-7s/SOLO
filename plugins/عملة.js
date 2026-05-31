@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export default {
     name: "عملة",
-    aliases: ["صرف"],
+    aliases: ["صرف","عمله"],
     category: "tools",
 
     async run({ bot, message, args, reply }) {

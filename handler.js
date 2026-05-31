@@ -906,17 +906,17 @@ if (global.plantGame) {
     }
 }
 
-// ==================== [ رادار سولو الشامل - النسخة المتوافقة مع الهندلر ] ====================
+// ==================== [ مضاد الشتائم - النسخة المحسنة ] ====================
 if (isGroup && global.protectionStatus?.[message.key.remoteJid] && !isDev) {
     
-// 1. التحقق المباشر من خاصية fromMe (لو الرسالة مرسلة من البوت)
-if (message.key.fromMe) return;
+    // 1. التحقق المباشر من خاصية fromMe (لو الرسالة مرسلة من البوت)
+    if (message.key.fromMe) return;
 
-// 2. التحقق الاحتياطي بمقارنة الأرقام فقط (لضمان استثناء البوت تماماً)
-const botNumber = this.bot.sock?.user?.id?.split(':')[0]?.split('@')[0];
-const senderNumber = userJid?.split(':')[0]?.split('@')[0];
+    // 2. التحقق الاحتياطي بمقارنة الأرقام فقط (لضمان استثناء البوت تماماً)
+    const botNumber = this.bot.sock?.user?.id?.split(':')[0]?.split('@')[0];
+    const senderNumber = userJid?.split(':')[0]?.split('@')[0];
 
-if (botNumber === senderNumber) return;
+    if (botNumber === senderNumber) return;
     
     const textLower = (this.extractText(message) || "").toLowerCase();
     const chatId = message.key.remoteJid;
@@ -927,8 +927,28 @@ if (botNumber === senderNumber) return;
     const participants = groupMetadata.participants;
     const user = participants.find(u => u.id === userJid);
     const isAdmin = user?.admin === 'admin' || user?.admin === 'superadmin';
+
+    // ✅ إذا كان العضو مشرف، يتخطى النظام (يسمح له بالشتائم)
+    if (isAdmin) {
+        resolve(false);
+        return;
+    }
     
-const badWords = [
+    // ✅ قراءة ملف shield.json
+    const shieldPath = './data/shield.json';
+    let shieldDB = fs.existsSync(shieldPath) ? fs.readJsonSync(shieldPath, { throws: false }) || {} : {};
+    
+    // التأكد من وجود بيانات المستخدم
+    if (!shieldDB[userJid]) {
+        shieldDB[userJid] = {
+            warnings: 0,
+            lastWarn: null,
+            firstWarn: null
+        };
+    }
+    
+    // ✅ قائمة الكلمات الممنوعة (اكتبها انت يدوياً بين القوسين)
+    const badWords = [
         "كسم", "كسمك", "المتناك", "المتناكة", "الشرموط", "الشرموطة", "شرموط", "شرموطة", "لبوة", "كسمينك",
         "كوسومك", "كوسمك", "خول", "الخول", "القحبة", "القحبه", "البضان", "يبضان", "لبوه", "اللبوه", "اللبوة",
         "العرث", "العرص", "المعرص", "المعرث", "المعرس", "المنكوع", "الكسم", "متناك", "متناكة", "متناكه",
@@ -941,28 +961,40 @@ const badWords = [
 
     const badEmojis = ["👄", "🫦", "🖕", "🖕🏻", "🖕🏼", "🖕🏽", "🖕🏾", "🖕🏿", "👅", "🥵", "🏳️‍⚧️", "🏳️‍🌈"];
     
-    const urlPattern = /([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?|https?:\/\/\S+|www\.\S+/gi;
-    const hasUrl = urlPattern.test(textLower);
+    // ❌ تم إزالة فحص الروابط بالكامل
     const hasBadWord = badWords.some(word => new RegExp(`(^|\\s)${word}($|\\s|[!?.])`, 'i').test(textLower));
     const hasBadEmoji = badEmojis.some(emoji => textLower.includes(emoji));
 
     let triggerRadar = false;
     if (hasBadWord || hasBadEmoji) triggerRadar = true;
-    if (hasUrl && !isAdmin) triggerRadar = true;
 
     if (triggerRadar) {
         const sender = userJid;
-        userData.stats.queries = (userData.stats.queries || 0) + 1;
-        const warningCount = userData.stats.queries;
+        
+        // زيادة عدد الإنذارات
+        const now = Date.now();
+        shieldDB[userJid].warnings += 1;
+        shieldDB[userJid].lastWarn = now;
+        if (!shieldDB[userJid].firstWarn) shieldDB[userJid].firstWarn = now;
+        
+        const warningCount = shieldDB[userJid].warnings;
+
+        // حفظ التغييرات في ملف shield.json
+        fs.writeJsonSync(shieldPath, shieldDB, { spaces: 2 });
 
         if (warningCount >= 4) {
-            const kickMsg = `*╭─━━━  𝐒𝐎𝐋𝐎 𝐒𝐇𝐈𝐄𝐋𝐃  ━━━─╮*\n\n*│ ◈ الـقـࢪاࢪ : ⦓ طـرد نـهـائـي 🚫 ⦔*\n\n*│ ◈ الـعـاق : ⦓ @${sender.split('@')[0]} ⦔*\n\n*│ ◈ الـسـبـب : تـجـاوز الـقـوانـيـن 4 مـرات❌*\n*╰─━━━━━━━━━━━━━━━━━━─╯*`.trim();
+            const kickMsg = `*╭─━━━  𝐒𝐎𝐋𝐎 𝐒𝐇𝐈𝐄𝐋𝐃  ━━━─╮*\n\n*│ ◈ الـقـࢪاࢪ : ⦓ طـرد نـهـائـي 🚫 ⦔*\n\n*│ ◈ الـعـاق : ⦓ @${sender.split('@')[0]} ⦔*\n\n*│ ◈ الـسـبـب : تـجـاوز الـقـوانـيـن 4 مـࢪات❌*\n*╰─━━━━━━━━━━━━━━━━━━─╯*`.trim();
+            
             this.sendMessage(chatId, { text: kickMsg, mentions: [sender] }).then(() => {
                 this.bot.sock.groupParticipantsUpdate(chatId, [sender], "remove").catch(() => {});
             });
-            userData.stats.queries = 0;
+            
+            // حذف سجل العضو بعد الطرد
+            delete shieldDB[userJid];
+            fs.writeJsonSync(shieldPath, shieldDB, { spaces: 2 });
+            
         } else {
-            const warnMsg = `*╭─━━  𝐒𝐎𝐋𝐎 𝐖𝐀𝐑𝐍𝐈𝐍𝐆  ━━─╮*\n\n*│ ◈ تـنـبـيه لـلـعـضـو: ⦓ @${sender.split('@')[0]} ⦔*\n\n*│ ◈ الإنـذار: ⦓ ${warningCount} / 4 ⦔*\n*│*\n*│ ◈ ⚠️ مـمـنـوع الـسـب، الـكـلام الـبـذئ، إرسال الـروابـط*\n\n*│ ◈ الـتـزم بـالـقـوانـيـن لـتـفـادي الـطـرد‼️*\n*╰─━━━━━━━━━━━━━━━━━━─╯*`.trim();
+            const warnMsg = `*╭─━━  𝐒𝐎𝐋𝐎 𝐖𝐀𝐑𝐍𝐈𝐍𝐆  ━━─╮*\n\n*│ ◈ تـنـبـيه لـلـعـضـو: ⦓ @${sender.split('@')[0]} ⦔*\n\n*│ ◈ الإنـذار: ⦓ ${warningCount} / 4 ⦔*\n*│*\n*│ ◈ ⚠️ مـمـنـوع الـسـب، الـكـلام الـبـذئ*\n\n*│ ◈ الـتـزم بـالـقـوانـيـن لـتـفـادي الـطـرد‼️*\n*╰─━━━━━━━━━━━━━━━━━━─╯*`.trim();
             this.sendMessage(chatId, { text: warnMsg, mentions: [sender] }).catch(() => {});
         }
 
@@ -971,6 +1003,71 @@ const badWords = [
         return;
     }
 }
+
+// ==================== [ مضاد الروابط التلقائي ] ====================
+if (isGroup && !isDev) {
+    const settingsPath = './data/links_settings.json';
+    
+    if (fs.existsSync(settingsPath)) {
+        const settings = fs.readJsonSync(settingsPath, { throws: false }) || {};
+        
+        // ✅ إذا كان النظام مفعل في هذه المجموعة
+        if (settings[message.key.remoteJid]?.enabled) {
+            
+            // استثناء المشرفين والمطورين
+            const groupMetadata = await this.bot.sock.groupMetadata(message.key.remoteJid);
+            const participants = groupMetadata.participants;
+            const user = participants.find(u => u.id === userJid);
+            const isAdmin = user?.admin === 'admin' || user?.admin === 'superadmin';
+            
+            if (!isAdmin && !isDev) {
+                const textLower = (this.extractText(message) || "").toLowerCase();
+                
+                // ✅ كشف أي رابط
+                const urlPattern = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\/[^\s]*)?)/gi;
+                const hasUrl = urlPattern.test(textLower);
+                
+                if (hasUrl) {
+                    // ✅ قراءة ملف الإنذارات
+                    const shieldPath = './data/shield.json';
+                    let shieldDB = fs.existsSync(shieldPath) ? fs.readJsonSync(shieldPath, { throws: false }) || {} : {};
+                    
+                    if (!shieldDB[userJid]) {
+                        shieldDB[userJid] = { warnings: 0, lastWarn: null, firstWarn: null };
+                    }
+                    
+                    const now = Date.now();
+                    shieldDB[userJid].warnings += 1;
+                    shieldDB[userJid].lastWarn = now;
+                    if (!shieldDB[userJid].firstWarn) shieldDB[userJid].firstWarn = now;
+                    
+                    const warningCount = shieldDB[userJid].warnings;
+                    fs.writeJsonSync(shieldPath, shieldDB, { spaces: 2 });
+                    
+                    if (warningCount >= 4) {
+                        const kickMsg = `*╭─━━━  𝐒𝐎𝐋𝐎 𝐒𝐇𝐈𝐄𝐋𝐃  ━━━─╮*\n\n*│ ◈ الـقـࢪاࢪ : ⦓ طـرد نـهـائـي 🚫 ⦔*\n\n*│ ◈ الـعـاق : ⦓ @${userJid.split('@')[0]} ⦔*\n\n*│ ◈ الـسـبـب : تـجـاوز الـقـوانـيـن 4 مـࢪات❌*\n*╰─━━━━━━━━━━━━━━━━━━─╯*`.trim();
+                        
+                        this.sendMessage(message.key.remoteJid, { text: kickMsg, mentions: [userJid] }).then(() => {
+                            this.bot.sock.groupParticipantsUpdate(message.key.remoteJid, [userJid], "remove").catch(() => {});
+                        });
+                        
+                        delete shieldDB[userJid];
+                        fs.writeJsonSync(shieldPath, shieldDB, { spaces: 2 });
+                    } else {
+                        const warnMsg = `*╭─━━  𝐒𝐎𝐋𝐎 𝐖𝐀𝐑𝐍𝐈𝐍𝐆  ━━─╮*\n\n*│ ◈ تـنـبـيه لـلـعـضـو: ⦓ @${userJid.split('@')[0]} ⦔*\n\n*│ ◈ الإنـذار: ⦓ ${warningCount} / 4 ⦔*\n*│*\n*│ ◈ ⚠️ مـمـنـوع إرسـال الـروابـط*\n\n*│ ◈ الـتـزم بـالـقـوانـيـن لـتـفـادي الـطـرد‼️*\n*╰─━━━━━━━━━━━━━━━━━━─╯*`.trim();
+                        this.sendMessage(message.key.remoteJid, { text: warnMsg, mentions: [userJid] }).catch(() => {});
+                    }
+                    
+                    // مسح الرسالة
+                    this.bot.sock.sendMessage(message.key.remoteJid, { delete: message.key }).catch(() => {});
+                    resolve(true);
+                    return;
+                }
+            }
+        }
+    }
+}
+
                     // --- [ نظام تفاعلي سولو: عداد يومي للمجموعات فقط ] ---
                     try {
                         const activityPath = './data/activity.json';
@@ -1056,9 +1153,9 @@ try {
                         ],
                         "C": [
                             { id: "C1", type: "messages", target: 150 },
-                            { id: "C2", type: "commands", target: 15 },
-                            { id: "C3", type: "replies", target: 25 },
-                            { id: "C4", type: "dungeon_open", target: 1 }
+                            { id: "C2", type: "dungeon_open", target: 1 },
+                            { id: "C3", type: "commands", target: 15 },
+                            { id: "C4", type: "replies", target: 25 }
                         ],
                         "B": [
                             { id: "B1", type: "messages", target: 300 },
@@ -1462,7 +1559,7 @@ if (global.xoGames && global.xoGames.pending) {
         const textLower = text.toLowerCase();
         
         // التحقق من الموافقة
-        if (textLower === 'موافقة' || textLower === '.موافقة') {
+        if (textLower === '.موافق' || textLower === '.موافقة') {
             if (userJid !== pending.player2) {
                 await this.sendMessage(message.key.remoteJid, { 
                     text: "*❌ هذا الطلب ليس لك.*" 
@@ -1910,7 +2007,7 @@ getActiveGameSessions(gameType = null) {
 async checkPermissions(command, userJid, isGroup, isDev, message) {
     if (this.bot.config?.MODE === 'private' && !isDev) return { allowed: false };
     
-    if (command.developer && !isDev) return { allowed: false, message:'*❌ الأمـࢪ ده لـلـمـطـوࢪ بـس يـحـبـي.*' };
+    if (command.developer && !isDev) return { allowed: false, message:'*❌ الأمـࢪ ده لـلـمـطـوࢪ بـس يـا حـبـي.*' };
 
     if (command.group && !isGroup) return { allowed: false, message: '*❌ هـذا الأمـࢪ يـعـمـل فـي الـمـجـمـوعـات فـقـط.*' };
     

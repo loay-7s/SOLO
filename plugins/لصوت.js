@@ -6,7 +6,7 @@ import { join } from 'path';
 
 export default {
     name: "لصوت",
-    description: "تحويل الفيديو إلى MP3 بستايل موثق",
+    description: "تحويل الفيديو إلى MP3 بحجم صغير وجودة مضبوطة",
     category: "tools",
     
     async run({ sock, message, reply }) {
@@ -15,10 +15,10 @@ export default {
             const videoMessage = quoted?.videoMessage || quoted?.viewOnceMessageV2?.message?.videoMessage;
 
             if (!videoMessage) {
-                return reply("🕷️ *رد على الفيديو الذي تريد تحويله لصوت*");
+                return reply("*🕷️ ࢪد عـلـى الـفـيـديـو الـذي تـࢪيـد تـحـويـلـه لـصـوتـيـة بـألأمـࢪ.*");
             }
 
-            // --- نظام التوثيق الخارق (من كود تست) ---
+            // نظام التوثيق
             const vcard = "BEGIN:VCARD\nVERSION:3.0\nFN: SOLO Bot\nORG: SOLO Team\nTEL;type=CELL;waid=6283833432570:+62 838-3343-2570\nEND:VCARD";
             const fakeQuoted = {
                 key: {
@@ -29,7 +29,7 @@ export default {
                 },
                 message: {
                     contactMessage: {
-                        displayName: "𝐒𝐎𝐋𝐎 𝐒𝐘𝐒𝐓𝐄𝐌 ✅",
+                        displayName: "𝑺𝑶𝑳𝑶 𝑩𝑶𝑻 ⚡",
                         vcard
                     }
                 }
@@ -49,8 +49,11 @@ export default {
 
             await writeFile(tempVideoPath, buffer);
 
-            // عملية التحويل باستخدام FFMPEG
-            exec(`ffmpeg -i "${tempVideoPath}" -vn -ar 44100 -ac 2 -b:a 192k "${tempAudioPath}"`, async (error) => {
+            // ✅ تحويل بجودة منخفضة لتقليل الحجم
+            // -ar 22050 = تردد 22 كيلوهرتز (نصف الجودة الأصلية)
+            // -ac 1 = صوت أحادي (مونو) بدل استريو
+            // -b:a 64k = معدل بت 64 كيلوبت في الثانية (جودة مقبولة وحجم صغير)
+            exec(`ffmpeg -i "${tempVideoPath}" -vn -ar 22050 -ac 1 -b:a 64k "${tempAudioPath}"`, async (error) => {
                 await unlink(tempVideoPath).catch(() => {});
 
                 if (error) {
@@ -58,16 +61,19 @@ export default {
                     return reply("❌ *تأكد من تثبيت ffmpeg على السيرفر*");
                 }
 
-                // إرسال الصوت بالتوثيق والخط الفخم
+                // جلب حجم الملف
+                const stats = await import('fs').then(fs => fs.promises.stat(tempAudioPath).catch(() => null));
+                const fileSizeMB = stats ? (stats.size / (1024 * 1024)).toFixed(2) : "0";
+                
                 await sock.sendMessage(message.key.remoteJid, {
                     audio: { url: tempAudioPath },
                     mimetype: 'audio/mpeg',
                     ptt: false,
-                    fileName: `𝐒𝐎𝐋𝐎_𝐌𝐔𝐒𝐈𝐂.mp3`,
+                    fileName: `𝐒𝐎𝐋𝐎_𝐀𝐔𝐃𝐈𝐎.mp3`,
                     contextInfo: {
                         externalAdReply: {
-                            title: "𝐒𝐎𝐋𝐎 𝐒𝐘𝐒𝐓𝐄𝐌 ✅",
-                            body: "تـم تـحـويـل الـفـيـديـو بـنـجـاح 🕷️",
+                            title: "𝐒𝐎𝐋𝐎 𝐒𝐘𝐒𝐓𝐄𝐌",
+                            body: `𝑪𝒐𝒏𝒗𝒆𝒓𝒕𝒆𝒅 𝑻𝒐 𝑨𝒖𝒅𝒊𝒐 📤`,
                             mediaType: 1,
                             renderLargerThumbnail: false,
                             showAdAttribution: false
@@ -76,6 +82,7 @@ export default {
                 }, { quoted: fakeQuoted });
 
                 await unlink(tempAudioPath).catch(() => {});
+                await sock.sendMessage(message.key.remoteJid, { react: { text: "✅", key: message.key } });
             });
 
         } catch (e) {

@@ -1,6 +1,6 @@
 export default {
     name: "خريطة",
-    aliases: ["map"],
+    aliases: ["map","خريطه"],
     description: "عرض خريطة لأي مكان في العالم",
     category: "tools",
     group: true,

@@ -4,7 +4,6 @@ import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
 import gradient from 'gradient-string';
-import QRCode from 'qrcode-terminal';
 import { EventEmitter } from 'events';
 import readline from 'readline';
 import { fileURLToPath } from 'url';
@@ -15,6 +14,17 @@ process.setMaxListeners(0);
 const logger = pino({ level: 'silent' });
 console.debug = () => {};
 console.info = () => {};
+
+const question = text => new Promise(resolve => {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+    rl.question(text, answer => {
+        rl.close();
+        resolve(answer);
+    });
+});
 
 // 🎨 تصاميم فخمة جداً (نفسها بدون تغيير)
 const styles = {
@@ -60,7 +70,7 @@ class SOLOBot {
     // 🚀 البانر الرئيسي الفخم (نفسه)
     showMainBanner() {
         console.clear();
-        console.log(styles.rainbow(`
+        console.log(styles.silver(`
     ███████╗ ██████╗ ██╗      ██████╗     ██████╗  ██████╗ ████████╗
     ██╔════╝██╔═══██╗██║     ██╔═══██╗    ██╔══██╗██╔═══██╗╚══██╔══╝
     ███████╗██║   ██║██║     ██║   ██║    ██████╔╝██║   ██║   ██║   
@@ -80,7 +90,7 @@ class SOLOBot {
     ╚══════════════════════════════════════════════════════════════╝
         `;
         
-        console.log(styles.gold(infoBox));
+        console.log(styles.red(infoBox));
         console.log(styles.cyan('\n  ⚡ INITIALIZING BOT SYSTEMS... ⚡\n'));
     }
 
@@ -115,40 +125,6 @@ class SOLOBot {
         console.log(styles.cyan('\n  ✨ Type .menu to see all commands ✨\n'));
     }
 
-    // 📱 شاشة QR Code (نفسها)
-    showQRScreen(qr, attempt) {
-        console.clear();
-        this.showMainBanner();
-        
-        const qrBox = `
-    ╔══════════════════════════════════════════════════════════════╗
-    ║                                                              ║
-    ║              📱  𝐒𝐂𝐀𝐍 𝐐𝐑 𝐂𝐎𝐃𝐄 𝐓𝐎 𝐂𝐎𝐍𝐍𝐄𝐂𝐓  📱               ║
-    ║                                                              ║
-    ╠══════════════════════════════════════════════════════════════╣
-    ║                                                              ║
-    ║  ⏰  𝐄𝐗𝐏𝐈𝐑𝐄𝐒 𝐈𝐍:    𝟔𝟎 𝐬𝐞𝐜𝐨𝐧𝐝𝐬                              ║
-    ║  📊  𝐀𝐓𝐓𝐄𝐌𝐏𝐓:       ${attempt}/3                                         ║
-    ║                                                              ║
-    ╚══════════════════════════════════════════════════════════════╝
-        `;
-        
-        console.log(styles.orange(qrBox));
-        
-        console.log(styles.cyan('\n  📋  𝐇𝐎𝐖 𝐓𝐎 𝐂𝐎𝐍𝐍𝐄𝐂𝐓:\n'));
-        console.log(styles.white('  1️⃣  Open WhatsApp on your phone'));
-        console.log(styles.white('  2️⃣  Tap Menu (⋮) or Settings ⚙️'));
-        console.log(styles.white('  3️⃣  Select "Linked Devices" 📱'));
-        console.log(styles.white('  4️⃣  Tap "Link a Device" 🔗'));
-        console.log(styles.white('  5️⃣  Scan the QR code below 📸\n'));
-        
-        QRCode.generate(qr, { small: true }, (qrcode) => {
-            console.log(styles.green(qrcode));
-        });
-        
-        console.log(styles.yellow(`\n  ⏰ QR expires in 60 seconds | Attempt ${attempt}/3\n`));
-    }
-
     async initialize() {
         try {
             this.showMainBanner();
@@ -162,25 +138,22 @@ class SOLOBot {
         }
     }
 
-// ✅ نظام منع التعلق (بدون soft restart)
-startKeepAlive() {
-    if (this.keepAlive) clearInterval(this.keepAlive);
-    
-    this.keepAlive = setInterval(() => {
-        // مجرد ping بسيط للحفاظ على الاتصال
-        if (this.sock?.ws?.readyState === 1) {
-            try {
-                this.sock.ws.ping();
-            } catch (e) {}
-        }
+    startKeepAlive() {
+        if (this.keepAlive) clearInterval(this.keepAlive);
         
-        // تنظيف الذاكرة كل ساعة
-        if (global.gc) {
-            global.gc();
-            console.log(styles.blue('🧹 Memory cleaned'));
-        }
-    }, 60000);
-}
+        this.keepAlive = setInterval(() => {
+            if (this.sock?.ws?.readyState === 1) {
+                try {
+                    this.sock.ws.ping();
+                } catch (e) {}
+            }
+            
+            if (global.gc) {
+                global.gc();
+                console.log(styles.blue('🧹 Memory cleaned'));
+            }
+        }, 60000);
+    }
 
     async handleReconnection() {
         this.connectionRetries++;
@@ -208,15 +181,14 @@ startKeepAlive() {
             }
         } catch (error) {}
     }
-
-    async startConnection() {
+        async startConnection() {
         try {
             const sessionDir = './session';
             
             if (fs.existsSync(sessionDir) && fs.existsSync(path.join(sessionDir, 'creds.json'))) {
                 console.log(styles.blue('📁 Existing session found, attempting to use it...'));
             } else {
-                console.log(styles.yellow('🆕 No valid session found, will request new QR code...'));
+                console.log(styles.yellow('🆕 No valid session found, will request pairing code...'));
             }
 
             const { version } = await fetchLatestBaileysVersion();
@@ -226,26 +198,73 @@ startKeepAlive() {
             this.authState = state;
             this.saveCreds = saveCreds;
 
-            this.sock = makeWASocket({
-                version,
-                auth: {
-                    creds: this.authState.creds,
-                    keys: makeCacheableSignalKeyStore(this.authState.keys, logger),
-                },
-                logger,
-                printQRInTerminal: false,
-                browser: Browsers.ubuntu('Chrome'),
-                syncFullHistory: false,
-                retryRequestDelayMs: 1000,
-                maxRetries: 3,
-                defaultQueryTimeoutMs: 30000,
-                keepAliveIntervalMs: 15000
-            });
+this.sock = makeWASocket({
+    version,
+    auth: {
+        creds: this.authState.creds,
+        keys: makeCacheableSignalKeyStore(this.authState.keys, logger),
+    },
+    logger,
+    printQRInTerminal: false,
+    // ✅ استخدم متصفح Windows بدل Ubuntu (أفضل للربط)
+    browser: ["Windows", "Chrome", "131.0.0.0"],
+    syncFullHistory: false,
+    retryRequestDelayMs: 1000,
+    maxRetries: 3,
+    defaultQueryTimeoutMs: 30000,
+    keepAliveIntervalMs: 15000
+});
 
             this.setupEventHandlers();
 
+            // ✅ طلب الرقم وكود الـ Pairing (بدون QR)
             if (!this.authState.creds.registered) {
-                console.log(styles.yellow('\n⏳ Waiting for QR code...\n'));
+                console.log(styles.rainbow(`
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║              🔐  𝐏𝐀𝐈𝐑𝐈𝐍𝐆 𝐒𝐘𝐒𝐓𝐄𝐌  🔐                          ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+                `));
+                
+                console.log(styles.cyan('\n  ✨ ENTER YOUR PHONE NUMBER TO RECEIVE THE PAIRING CODE ✨\n'));
+                console.log(styles.white('  📱 Format: +201234567890 (with country code)\n'));
+
+                let phoneNumber = await question(chalk.bgHex('#FFD700').black('  🔢 Phone Number : '));
+                if (phoneNumber.trim() === '#') process.exit();
+
+                phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
+                if (!phoneNumber.match(/^\d{10,15}$/)) {
+                    console.log(styles.red('\n  ❌ Invalid phone number.\n'));
+                    process.exit(1);
+                }
+
+                try {
+                    const code = await this.sock.requestPairingCode(phoneNumber);
+                    console.log(styles.green(`
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║              🔐  𝐏𝐀𝐈𝐑𝐈𝐍𝐆 𝐂𝐎𝐌𝐏𝐋𝐄𝐓𝐄  🔐                         ║
+║                                                              ║
+╠══════════════════════════════════════════════════════════════╣
+║                                                              ║
+║  📞  𝐏𝐇𝐎𝐍𝐄 𝐍𝐔𝐌𝐁𝐄𝐑:    ⦓ ${phoneNumber} ⦔                         ║
+║  🔑  𝐏𝐀𝐈𝐑𝐈𝐍𝐆 𝐂𝐎𝐃𝐄:    ⦓ ${code} ⦔                               ║
+║                                                              ║
+║  💡  𝐇𝐎𝐖 𝐓𝐎 𝐂𝐎𝐍𝐍𝐄𝐂𝐓:                                          ║
+║                                                              ║
+║  1️⃣  Open WhatsApp on your phone                            ║
+║  2️⃣  Tap Menu (⋮) or Settings ⚙️                            ║
+║  3️⃣  Select "Linked Devices" 📱                             ║
+║  4️⃣  Tap "Link a Device" 🔗                                 ║
+║  5️⃣  Enter the pairing code above 📲                        ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+                    `));
+                } catch (error) {
+                    console.log(styles.red('\n  ❌ Failed to get pairing code.\n'));
+                    process.exit(1);
+                }
             }
 
         } catch (error) {
@@ -544,73 +563,61 @@ console.log("Reception error:",err);
         });
     }
 
-    handleConnectionUpdate(update) {
-        const { connection, lastDisconnect, qr } = update;
+handleConnectionUpdate(update) {
+    const { connection, lastDisconnect } = update; // ❌ تم إزالة qr
+    
+    if (connection === 'open') {
+        this.isConnected = true;
+        this.connectionRetries = 0;
+        this.qrAttempts = 0;
+        this.reconnecting = false;
         
-        if (qr && !this.authState.creds.registered) {
-            this.qrAttempts++;
-            this.showQRScreen(qr, this.qrAttempts);
-            
-            if (this.qrAttempts >= 3) {
-                console.log(styles.red('\n⚠️ Multiple QR attempts failed. Restarting process...\n'));
-                this.qrAttempts = 0;
-                setTimeout(() => {
-                    fs.rmSync('./session', { recursive: true, force: true });
-                    this.initialize();
-                }, 3000);
-            }
+        // ✅ أضف هذين السطرين هنا
+        this.startTime = Date.now();   // ينسى الرسائل القديمة
+        this.messageCount = 0;         // يصفّر عداد الرسائل
+        
+        this.showConnectedScreen();
+        
+        try {
+            import('./data/alarms.js').then(module => {
+                if (module.loadSavedAlarms) {
+                    module.loadSavedAlarms(this.sock);
+                }
+            }).catch(() => {});
+        } catch (e) {}
+        
+        if (!this.handler) { 
+            console.log(styles.cyan('🚀 Loading bot systems...'));
+            this.loadSystems();
         }
         
-        if (connection === 'open') {
-            this.isConnected = true;
-            this.connectionRetries = 0;
-            this.qrAttempts = 0;
-            this.reconnecting = false;
-            
-            this.showConnectedScreen();
-            
-            // تحميل المنبهات المحفوظة
-            try {
-                import('./data/alarms.js').then(module => {
-                    if (module.loadSavedAlarms) {
-                        module.loadSavedAlarms(this.sock);
-                    }
-                }).catch(() => {});
-            } catch (e) {}
-            
-            if (!this.handler) { 
-                console.log(styles.cyan('🚀 Loading bot systems...'));
-                this.loadSystems();
-            }
-            
-        } else if (connection === 'close') {
-            this.isConnected = false;
-            const statusCode = lastDisconnect?.error?.output?.statusCode;
-            const isCriticalError = statusCode === DisconnectReason.loggedOut || statusCode === DisconnectReason.connectionReplaced;
+    } else if (connection === 'close') {
+        this.isConnected = false;
+        const statusCode = lastDisconnect?.error?.output?.statusCode;
+        const isCriticalError = statusCode === DisconnectReason.loggedOut || statusCode === DisconnectReason.connectionReplaced;
 
-            if (isCriticalError) {
-                console.log(styles.red('\n❌ Critical session issue. Cleaning up...'));
-                fs.rmSync('./session', { recursive: true, force: true });
-                setTimeout(() => this.initialize(), 3000);
-            } else {
-                if (!this.reconnecting) {
-                    this.reconnecting = true;
-                    console.log(styles.yellow('\n🔄 Reconnecting...\n'));
-                    setTimeout(() => {
-                        this.reconnecting = false;
-                        this.startConnection();
-                    }, 5000);
-                }
+        if (isCriticalError) {
+            console.log(styles.red('\n❌ Critical session issue. Cleaning up...'));
+            fs.rmSync('./session', { recursive: true, force: true });
+            setTimeout(() => this.initialize(), 3000);
+        } else {
+            if (!this.reconnecting) {
+                this.reconnecting = true;
+                console.log(styles.yellow('\n🔄 Reconnecting...\n'));
+                setTimeout(() => {
+                    this.reconnecting = false;
+                    this.startConnection();
+                }, 5000);
             }
         }
     }
+}
 
     async handleMessagesUpsert(m) {
         try {
             const message = m.messages[0];
             if (!message || !message.message || message.key.remoteJid === 'status@broadcast') return;
             
-            // تحديث الوقت
             this.lastMessageTime = Date.now();
             this.messageCount++;
             

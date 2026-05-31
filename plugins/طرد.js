@@ -32,14 +32,19 @@ export default {
             }
 
             if (isVictimAdmin && !isDeveloper) {
-                return reply("*❌ ده مـشـࢪف زيـك يـا نـجـم.. مـتـبـقـاش طـمـوح زيـادة*");
+                return reply("*❌ ده مـشـࢪف زيـك يـا عـبـيـط*");
             }
 
-            if (target.includes(sock.user.id.split(':')[0])) return reply("*❌ عـايـز تـطـࢪدنـي انـا؟ خـخ ده انـا الـلـي شـايـل الـجـࢪوب عـلـى كـتـافـي يـا بـقـف*");
+            // ✅ التحقق من LID البوت المميز
+            const specialLID = "169544471589011@lid";
+            
+            if (target === specialLID) {
+                return reply("*❌ عـايـز تـطـࢪدنـي انـا؟ خـخ ده انـا الـلـي شـايـل الـجـࢪوب عـلـى كـتـافـي يـا بـقـف*");
+            }
 
             // 4. الرسالة الأولى (تنسيق الحروف)
             await sock.sendMessage(chatId, { react: { text: "✈️", key: message.key } });
-            await reply("*جـاࢪي تـنـظـيـف الـجـࢪوب🧹.. لـحـظـة واحـدة*");
+            await reply("*جـاࢪي تـنـظـيـف الـجـࢪوب🧹..*");
 
             // 5. التنفيذ
             const response = await sock.groupParticipantsUpdate(chatId, [target], "remove");
@@ -47,12 +52,8 @@ export default {
             // 6. الرسالة الثانية (سخرية مباشرة بدون منشن)
             if (response[0]?.status === "200" || response[0]?.status === undefined) {
                 const insults = [
-                    "*يـلا بـࢪه.. الـجـࢪوب بـقـى انـضـف دلـوقـتـي!* 🧹",
                     "*الـلـي بـعـده.. حـد تـانـي عـاوز يـجـࢪب يـطـيـࢪ؟* ✈️",
-                    "*بـاي بـاي يـا حـلـو.. ࢪوح الـعـب بـعـيـد!* 👶🏻",
-                    "*تـم الـاࢪسـال الـى الـمـࢪيـخ بـنـجـاح..* 🚀",
-                    "*اࢪتـحـنـا مـن صـداعـك اخـيـࢪا..* 😴",
-                    "*الـبـاب يـفـوت جـمـل يـا بـيـبـي..* 🚪"
+                    "*تـم الـاࢪسـال الـى الـمـࢪيـخ بـنـجـاح..* 🚀"
                 ];
                 const randomInsult = insults[Math.floor(Math.random() * insults.length)];
                 

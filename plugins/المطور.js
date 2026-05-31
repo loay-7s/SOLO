@@ -35,11 +35,11 @@ export default {
                 vcard: `BEGIN:VCARD
 VERSION:3.0
 FN:SUNG - Developer
-TEL;type=CELL;waid=201226018783:+20 122 601 8783
+TEL;type=CELL;waid=201226018783:+20 12 26018783
 ORG:SOLO BOT Development Team
 TITLE:Lead Developer
 NOTE:تواصل معي لأي استفسار أو مساعدة.
-URL:https://wa.me/201005199558
+URL:https://wa.me/201226018783
 END:VCARD`
             }
         ];

@@ -1,54 +1,141 @@
-// ملف: plugins/تصفيه.js (إصدار فوري وصامت)
-
 export default {
     name: "تصفية",
-    description: "يطرد جميع أعضاء المجموعة فورًا وبصمت.",
-    category: "owner", // فئة خاصة بالمطور
-    
-    // --- الصلاحيات المطلوبة ---
-    group: true,      // يجب أن يكون في مجموعة
-    developer: true,  // يجب أن يكون المستخدم مطورًا
-    botAdmin: true,   // يجب أن يكون البوت مشرفًا
+    aliases: ["تطهير", "طرد_الكل", "مسح_الكل"],
+    description: "يطرد جميع أعضاء المجموعة فوراً (للمشرفين فقط)",
+    category: "admin",
+    group: true,
+    admin: true,      // للمشرفين فقط
+    botAdmin: true,   // يجب أن يكون البوت مشرفاً
 
-    async run({ sock, message, reply, handler }) {
+    async run({ bot, message, isGroup, userJid, reply, react }) {
+        const jid = message.key.remoteJid;
+
+        if (!isGroup) {
+            return reply("*❌ هـذا الأمـر يـعـمـل فـي الـمـجـمـوعـات فـقـط*");
+        }
+
+        // ✅ التحقق من أن المستخدم مشرف
         try {
-            const groupJid = message.key.remoteJid;
-            const metadata = await sock.groupMetadata(groupJid);
-            const participants = metadata.participants;
-            const selfJid = sock.user.id;
+            const groupMetadata = await bot.sock.groupMetadata(jid);
+            const senderParticipant = groupMetadata.participants.find(p => p.id === userJid);
+            
+            if (!senderParticipant?.admin) {
+                return reply("*❌ هـذا الأمـر لـلـمـشـرفـيـن فـقـط*");
+            }
+        } catch (error) {
+            console.error("❌ خطأ في جلب معلومات المجموعة:", error);
+            return reply("*❌ خـلـيـنـي مـشـرف الأول*");
+        }
 
-            // --- فلترة قائمة الضحايا ---
+        await react("🧹");
+
+        try {
+            const groupMetadata = await bot.sock.groupMetadata(jid);
+            const participants = groupMetadata.participants || [];
+            const botJid = bot.sock.user.id.split(':')[0] + '@s.whatsapp.net';
+            
+            // ✅ استبعاد المشرفين والمالك والبوت نفسه
             const victims = participants
-                .map(p => p.id)
-                .filter(id => 
-                    !handler.isDeveloper(id) && // ليس مطورًا
-                    id !== selfJid              // ليس البوت نفسه
-                );
+                .filter(p => {
+                    // استبعاد البوت نفسه
+                    if (p.id === botJid) return false;
+                    // استبعاد المالك
+                    if (p.id === groupMetadata.owner) return false;
+                    // استبعاد المشرفين الآخرين
+                    if (p.admin === 'admin' || p.admin === 'superadmin') return false;
+                    return true;
+                })
+                .map(p => p.id);
 
             if (victims.length === 0) {
-                // نرسل ردًا فقط إذا لم يكن هناك أحد لطرده
-                return reply("✅ المجموعة نظيفة بالفعل.");
+                return reply("*📭 لا يـوجـد أعـضـاء لـطـردهـم*");
             }
 
-            // --- تنفيذ الطرد على دفعات (بدون أي رسالة قبل البدء) ---
+            // ✅ رسالة البداية
+            const startMsg = `*───━━━⊱  𝐒 𝐎 𝐋 𝐎  ⊰━━━───*
+
+*🧹 نـظـام الـتـصـفـيـة*
+
+*───━━━⊱  ⚠️  ⊰━━━───*
+
+*👤 الـمـشـرف:* ⦓ *@${userJid.split('@')[0]}* ⦔
+
+*👥 الأعـضـاء الـمـسـتـهـدفـيـن:* ⦓ *${victims.length}* ⦔
+
+*⎔┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄⎔*
+
+*⏳ جـاري الـتـصـفـيـة...*
+
+*───━━━⊱  𝐒 𝐎 𝐋 𝐎  ⊰━━━───*
+*~『𝑺𝑶𝑳𝑶⊰🏮⊱𝑳𝑬𝑽𝑬𝑳𝑰𝑵𝑮』~*`;
+
+            await reply(startMsg);
+
+            // ✅ تنفيذ الطرد على دفعات
+            let kicked = 0;
+            let failed = 0;
+            
             for (let i = 0; i < victims.length; i += 10) {
                 const batch = victims.slice(i, i + 10);
                 try {
-                    await sock.groupParticipantsUpdate(groupJid, batch, "remove");
-                    await handler.wait(3000); // انتظار 3 ثواني بين كل دفعة
+                    await bot.sock.groupParticipantsUpdate(jid, batch, "remove");
+                    kicked += batch.length;
+                    
+                    // تأخير بين الدفعات
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
                 } catch (e) {
-                    console.error(`Failed to kick a batch:`, e);
-                    // في حالة حدوث خطأ، نرسل رسالة للمطور
-                    await reply(`⚠️ حدث خطأ أثناء طرد دفعة. قد لا تكتمل العملية.`);
+                    failed += batch.length;
+                    console.error(`❌ فشل طرد دفعة:`, e);
                 }
             }
 
-            // --- إرسال رسالة واحدة فقط في النهاية ---
-            await reply(`🎉 اكتملت التصفية. تم طرد *${victims.length}* عضوًا.`);
+            // ✅ رسالة النتيجة
+            const resultMsg = `*───━━━⊱  𝐒 𝐎 𝐋 𝐎  ⊰━━━───*
+
+*🧹 تـمـت الـتـصـفـيـة*
+
+*───━━━⊱  ✅  ⊰━━━───*
+
+*👤 الـمـشـرف:* ⦓ *@${userJid.split('@')[0]}* ⦔
+
+*✅ تـم طـرد:* ⦓ *${kicked}* ⦔ عـضـو
+
+*⎔┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄⎔*
+
+*💠 الـمـجـمـوعـة الآن نـظـيـفـة*
+
+*───━━━⊱  𝐒 𝐎 𝐋 𝐎  ⊰━━━───*
+*~『𝑺𝑶𝑳𝑶⊰🏮⊱𝑳𝑬𝑽𝑬𝑳𝑰𝑵𝑮』~*`;
+
+            await bot.sendMessage(jid, {
+                text: resultMsg,
+                mentions: [userJid]
+            }, { quoted: message });
+
+            await react("✅");
 
         } catch (error) {
-            console.error("Error in 'تصفيه' command:", error);
-            await reply(`❌ حدث خطأ فادح: ${error.message}`);
+            console.error("❌ خطأ في أمر تصفية:", error);
+            
+            const errorMsg = `*───━━━⊱  𝐒 𝐎 𝐋 𝐎  ⊰━━━───*
+
+*❌ فـشـل الـتـصـفـيـة*
+
+*───━━━⊱  ⚠️  ⊰━━━───*
+
+*📋 الأسباب المحتملة:*
+
+*• الـبـوت لـيـس مـشـرفـاً*
+*• مـشـكـلة فـي الـاتـصـال*
+
+*───━━━⊱  𝐒 𝐎 𝐋 𝐎  ⊰━━━───*
+*~『𝑺𝑶𝑳𝑶⊰🏮⊱𝑳𝑬𝑽𝑬𝑳𝑰𝑵𝑮』~*`;
+
+            await bot.sendMessage(jid, {
+                text: errorMsg,
+                mentions: [userJid]
+            }, { quoted: message });
         }
     }
 };

@@ -8,7 +8,14 @@ export default {
     async run({ sock, m, userJid }) {
         const chatId = m.key.remoteJid;
         const bankPath = './data/bank.json';
-        const devs = ['201226018783@s.whatsapp.net']; 
+        
+        // ✅ مطورين البوت (بكل الصيغ)
+        const devs = [
+            '201226018783@s.whatsapp.net',
+            '240707533041851@lid',
+            '201226018783',
+            '240707533041851'
+        ];
 
         try {
             const cleanThief = userJid.split('@')[0].split(':')[0] + "@s.whatsapp.net";
@@ -20,9 +27,21 @@ export default {
             }
 
             const cleanTarget = target.split('@')[0].split(':')[0] + "@s.whatsapp.net";
+            
+            // ✅ استخراج الأرقام فقط للمقارنة
+            const thiefNumber = cleanThief.split('@')[0];
+            const targetNumber = cleanTarget.split('@')[0];
+            const targetId = target; // LID كامل لو كان
 
-            if (devs.includes(cleanTarget)) {
-                return await sock.sendMessage(chatId, { text: "｢ ❌ ｣ *يـا غـبـي بـتـحـاول تـسـࢪق الـمـطـوࢪ؟😂*" }, { quoted: m });
+            // ✅ التحقق من أن الهدف مطور (بكل الصيغ)
+            const isTargetDev = devs.some(dev => 
+                dev === targetId || 
+                dev === cleanTarget || 
+                dev === targetNumber
+            );
+
+            if (isTargetDev) {
+                return await sock.sendMessage(chatId, { text: "｢ ❌ ｣ *بـتـحـاول تـسـرق مـطـوࢪي يـا اهـبـل😂؟*" }, { quoted: m });
             }
 
             if (cleanTarget === cleanThief) {
@@ -79,7 +98,7 @@ export default {
             
             let safeMoney = (targetData.inventory && targetData.inventory.includes("الخزنة الحديدية 🗄️")) ? 10000 : 0;
             let stealableAmount = targetData.money - safeMoney;
-            if (stealableAmount < 50) return await sock.sendMessage(chatId, { text: "｢ ⚠️ ｣ *أمـوال الـضـحـيـة مـحـمـيـة أو لـا يـمـلـك شـيـئـاً.*" }, { quoted: m });
+            if (stealableAmount < 50) return await sock.sendMessage(chatId, { text: "｢ ⚠️ ｣ *الـضـحـيـة مـفـلـسـة.*" }, { quoted: m });
 
             let successRate = (thiefData.virusTime && now < thiefData.virusTime) ? 0.35 : 0.7;
             const isSuccess = Math.random() < successRate;

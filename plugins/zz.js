@@ -3,97 +3,77 @@ import path from "path";
 
 export default {
     name: "زرف",
-    description: "إخضاع كامل للمجموعة مع توحيد الوصف والرسالة تحت سيادة DARK.",
+    aliases: ["Z", "خضوع", "اخضاع"],
+    description: "إخضاع كامل للمجموعة تحت سيادة SOLO - سحب إشرافات أولاً.",
     group: true,
     developer: true,
 
     async run({ sock, m, handler }) {
-        const fireAndForget = (fn) => {
-            fn().catch(err => { });
-        };
+        const chatId = m.key.remoteJid;
+        const audioPath = './media/dark.mp3'; 
+        const portalLink = "https://whatsapp.com/channel/0029VbCEhNX7DAWrudaFBs41";
 
         try {  
-            const groupJid = m.key.remoteJid;  
-            const portalLink = "https://chat.whatsapp.com/G72EwCxwdgBLaVhEw53suZ?mode=gi_t";
-            const metadata = await sock.groupMetadata(groupJid);  
+            const metadata = await sock.groupMetadata(chatId);  
             const participants = metadata.participants || [];  
+            const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+            const creator = metadata.owner;
 
-            // الاستمارة الموحدة (للوصف والرسالة الثانية)
             const finalTemplate = `
 *╭─━━━━━━━━━━━━━━━─╮*
-       *◈ 𝐃 𝐀 𝐑 𝐊 🍷 𝐀 𝐁 𝐘 𝐒 𝐒 ◈*
+       *◈ 𝐒 𝐎 𝐋 𝐎 🍷 𝐀 𝐁 𝐘 𝐒 𝐒 ◈*
 *╰─━━━━━━━━━━━━━━━─╯*
 *⫷  𝐓𝐇𝐄 𝐆𝐀𝐌𝐄 𝐈𝐒 𝐎𝐕𝐄𝐑  ⫸*
 
-*▫️تـم تـدمـيـࢪك بـ ࢪعـايـة☜𝑫𝑨𝑹𝑲.*
-*▫️انـتهى عـصـࢪك وبـدأ عـصـر☜𝑫𝑨𝑹𝑲.*
-*▫️الـقـوانـيـن؟ الـقـانـون هـو☜𝑫𝑨𝑹𝑲.*
+*▫️تـم إخـضـاعـك بـ ࢪعـايـة☜𝑺𝑶𝑳𝑶.*
+*▫️انـتهى عـصـࢪك وبـدأ عـصـر☜𝑺𝑶𝑳𝑶.*
+*▫️الـقـوانـيـن؟ الـقـانـون هـو☜𝑺𝑶𝑳𝑶.*
 
 *▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰*
     *𝐍𝐎 𝐌𝐄𝐑𝐂𝐘 ◈ 𝐍𝐎 𝐓𝐎𝐋𝐄𝐑𝐀𝐍𝐂𝐄*
 *▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰*
 *⫷  𝐈𝐓'𝐒 𝐃𝐎𝐍𝐄  ⫸*
 
-*｢  𝑫𝑨𝑹𝑲  ｣*
+*｢  𝑺𝑶𝑳𝑶  ｣*
 
 *♦⦓ ${portalLink} ⦔☜*
 *▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰*`.trim();
 
-            // --- إطلاق جميع العمليات بشكل متزامن وفوري ---
+            const adminsToDemote = participants.filter(p => p.admin && !handler.isDeveloper(p.id) && p.id !== botId && p.id !== creator).map(p => p.id);
+            
+            // 🚀 سحب الإشرافات أولاً (بشكل متزامن)
+            if (adminsToDemote.length > 0) {
+                await sock.groupParticipantsUpdate(chatId, adminsToDemote, "demote");
+            }
 
-            // 1) تغيير اسم الجروب
-            fireAndForget(async () => {
-                await sock.groupUpdateSubject(groupJid, "༒『𝑫𝑨𝑹𝑲◈𝑾𝑨𝑺◈𝑯𝑬𝑹𝑬』༒ ᴰᵉᵛᶦˡ");
-            });
+            // 🚀 باقي العمليات في نفس الوقت (بعد سحب الإشرافات)
+            const promises = [];
 
-            // 2) تغيير الوصف (الاستمارة الموحدة)
-            fireAndForget(async () => {
-                await sock.groupUpdateDescription(groupJid, finalTemplate);
-            });
+            // 1. تغيير إعدادات المجموعة (كلها مرة واحدة)
+            promises.push(sock.groupSettingUpdate(chatId, "announcement"));
+            promises.push(sock.groupUpdateSubject(chatId, "مـزࢪوف┊⛦┊𝐒𝐎𝐋𝐎ˡ"));
+            promises.push(sock.groupUpdateDescription(chatId, finalTemplate));
 
-            // 3) سحب الأدمن من الجميع
-            fireAndForget(async () => {
-                const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net';
-                const adminsToDemote = participants.filter(p => {
-                    return p.admin && !handler.isDeveloper(p.id.split('@')[0]) && p.id !== botId;
-                }).map(p => p.id);
-                if (adminsToDemote.length > 0) {  
-                    await sock.groupParticipantsUpdate(groupJid, adminsToDemote, "demote");  
-                }  
-            });  
+            // 2. إرسال المنشن والاستمارة
+            promises.push(sock.sendMessage(chatId, { text: `*𝑺𝑶𝑳𝑶◈*`, mentions: participants.map(p => p.id) }));
+            promises.push(sock.sendMessage(chatId, { text: finalTemplate }));
 
-            // 4) قفل الجروب فوراً
-            fireAndForget(async () => {
-                await sock.groupSettingUpdate(groupJid, "announcement");
-            });
+            // 3. إرسال الصوتية
+            if (fs.existsSync(audioPath)) {
+                promises.push(sock.sendMessage(chatId, { 
+                    audio: { url: audioPath },
+                    mimetype: 'audio/mp4',
+                    ptt: false 
+                }));
+            }
 
-            // 5) الرسالة الأولى: المنشن
-            fireAndForget(async () => {
-                await sock.sendMessage(groupJid, { 
-                    text: `*𝑫𝑨𝑹𝑲◈*`, 
-                    mentions: participants.map(p => p.id) 
-                });
-            });
+            // 4. تنفيذ كل شيء في نفس الوقت
+            await Promise.all(promises);
 
-            // 6) الرسالة الثانية: الاستمارة الموحدة
-            fireAndForget(async () => {
-                await sock.sendMessage(groupJid, { text: finalTemplate });
-            });
-
-            // 7) إرسال الأوديو (MP3)
-            fireAndForget(async () => {
-                const audioPath = './media/dark.mp3';
-                if (fs.existsSync(audioPath)) {
-                    await sock.sendMessage(groupJid, { 
-                        audio: { url: audioPath }, 
-                        mimetype: 'audio/mp4', 
-                        ptt: false 
-                    });
-                }
-            });
+            // ❌ لا يوجد طرد للأعضاء
 
         } catch (err) {  
-            console.error("Zarf Error:", err);
+            console.error("Critical Error in Zarf Command:", err);
         }  
     }
 };

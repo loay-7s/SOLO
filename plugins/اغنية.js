@@ -10,7 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default {
     name: "اغنية",
-    aliases: ["اغنيه", "song", "شغل", "music"],
+    aliases: ["اغنيه", "song", "شغل", "music","أغنيه","أغنية","سمعني","غنيوة"],
     category: "تحميل",
 
     async run({ sock, m, userJid, args }) {
