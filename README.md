@@ -30,7 +30,7 @@ Powerful WhatsApp bot built with Baileys, featuring AI tools, media downloads, g
 git clone https://github.com/loay-7s/SOLO.git
 cd SOLO
 npm install
-npm start
+node index.js
 
 ---
 
